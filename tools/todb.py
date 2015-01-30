@@ -52,32 +52,45 @@ def parse_taglist(data):
 with open("radiolist", "rb") as h:
     x = parse_taglist(h.read())[:]
 
-x = filter(lambda i: i.get("~#listenerpeak", 800) > 150, x)
-
-keys = set()
+y = {}
 for i in x:
-    keys.update(i.keys())
-keys = sorted(keys)
+    temp = {}
+    temp.update(i)
+    temp.pop("~uri")
+    temp.pop("~#listenerpeak", None)
+    #temp.pop("~#bitrate", None)
+    #print temp.keys()
+    key = tuple(sorted(temp.items()))
+    y.setdefault(key, []).append(i)
 
+print len(y), len(x)
 
-values = dict((v, []) for v in keys)
-
-stations = []
-for i in x:
-    t = []
-    for k in keys:
-        value = i.get(k, "")
-        tag_values = values[k]
-
-        try:
-            t.append(tag_values.index(value))
-        except ValueError:
-            t.append(len(tag_values))
-            tag_values.append(value)
-    stations.append(t)
-
-values = [x[1] for x in sorted(values.items())]
-keys = dict((k, keys.index(k)) for k in keys)
-
-import json
-print "Search.setIndex(" + json.dumps({"keys": keys, "values": values, "stations": stations}) + ");"
+#~ x = filter(lambda i: i.get("~#listenerpeak", 800) > 150, x)
+#~ 
+#~ keys = set()
+#~ for i in x:
+    #~ keys.update(i.keys())
+#~ keys = sorted(keys)
+#~ 
+#~ 
+#~ values = dict((v, []) for v in keys)
+#~ 
+#~ stations = []
+#~ for i in x:
+    #~ t = []
+    #~ for k in keys:
+        #~ value = i.get(k, "")
+        #~ tag_values = values[k]
+#~ 
+        #~ try:
+            #~ t.append(tag_values.index(value))
+        #~ except ValueError:
+            #~ t.append(len(tag_values))
+            #~ tag_values.append(value)
+    #~ stations.append(t)
+#~ 
+#~ values = [x[1] for x in sorted(values.items())]
+#~ keys = dict((k, keys.index(k)) for k in keys)
+#~ 
+#~ import json
+#~ print "Search.setIndex(" + json.dumps({"keys": keys, "values": values, "stations": stations}) + ");"
