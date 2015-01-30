@@ -52,7 +52,7 @@ def parse_taglist(data):
 with open("radiolist", "rb") as h:
     x = parse_taglist(h.read())[:]
 
-x = filter(lambda i: i.get("~#listenerpeak", 80) > 70, x)
+x = filter(lambda i: i.get("~#listenerpeak", 800) > 150, x)
 
 keys = set()
 for i in x:
