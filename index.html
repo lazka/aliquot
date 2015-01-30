@@ -319,7 +319,12 @@ var Search = {
   },
 
   query : function(query) {
-      Search.output.empty();
+    this.output.empty();
+
+    var parts = query.toLowerCase().split(/\s+/);
+    // filter out empty ones
+    parts = parts.filter(function(e){return e});
+
       var index = this._index;
       var stations = index.stations;
       var website_idx = index.keys["website"];
@@ -333,7 +338,7 @@ var Search = {
       this._result_urls = [];
       var results = [];
       var x = 0;
-      query = query.toLowerCase()
+
       for(var i in stations) {
           var station = stations[i];
           var uri = values[uri_idx][station[uri_idx]];
@@ -343,7 +348,19 @@ var Search = {
           var bitrate = values[bitrate_idx][station[bitrate_idx]];
           var codec = values[codec_idx][station[codec_idx]];
 
-        if (genre.toLowerCase().indexOf(query) != -1 || organization.toLowerCase().indexOf(query) != -1) {
+         var genre_low = genre.toLowerCase();
+         var orga_low = organization.toLowerCase();
+         var website_low = website.toLowerCase();
+          var ok = true;
+          for(var j in parts) {
+              var part = parts[j];
+              if (genre_low.indexOf(part) == -1 && orga_low.indexOf(part) == -1 && website_low.indexOf(part) == -1) {
+                ok = false;
+                break;
+              }
+          }
+
+        if (ok) {
             this._result_urls[x] = uri;
             var res;
             res = '<div class="result">';
@@ -381,6 +398,7 @@ var Search = {
       }
     }
 
+    $('#content').scrollTop(0);
     displayNextItem(query, 1);
   },
 
