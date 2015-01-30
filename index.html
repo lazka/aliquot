@@ -150,9 +150,8 @@ a {
     font-weight: bold;
 }
 
-#error {
+#status {
     width: 100px;
-    color: #BB3520;
     position: fixed;
     bottom: 0px;
     height: 40px;
@@ -184,7 +183,7 @@ a {
     <div id="footer">
         <a href="javascript:;" id="random" title="Play a random station"><i class="fa fa-random"></i></a>
         <div id="stats"></div>
-        <div id="error"></div>
+        <div id="status"></div>
     </div>
 
     </div>
@@ -205,58 +204,71 @@ var Player = {
         this._aud = new Audio();
         var parent = this;
 
-        this._aud.addEventListener('error', function failed(e) {
+        this._aud.addEventListener('loadstart', function (e) {
+            parent._setMsg("Loading started");
+        });
+
+        this._aud.addEventListener('stalled', function (e) {
+            parent._setMsg("Loading stalled");
+        });
+
+        this._aud.addEventListener('playing', function (e) {
+            parent._setMsg("Playing");
+        });
+
+        this._aud.addEventListener('error', function (e) {
             var error = e.target.error;
-            if(error.code == error.MEDIA_ERR_SRC_NOT_SUPPORTED) {
-                // fixum shoutcast
-                var src = parent._aud.src;
+            if(!error)
+                return;
 
-                if(endsWith(src, "/;")) {
-                    parent._realError(parent._orig_error);
-                    parent._orig_error = null;
-                    return;
-                }
-                if(parent._orig_error == null)
-                    parent._orig_error = error;
-
-                if(endsWith(src, "/")) {
-                    src += ";";
-                } else if(!endsWith(src, ";")) {
-                    src += "/;";
-                }
-
-                parent.play(src);
+            switch (error.code) {
+                case error.MEDIA_ERR_ABORTED:
+                  this._setMsg("Playback aborted.");
+                  break;
+                case error.MEDIA_ERR_NETWORK:
+                  this._setMsg("Network error");
+                  break;
+                case error.MEDIA_ERR_DECODE:
+                  this._setMsg("Decoding error");
+                  break;
+                case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                  this._setMsg("Format not supported");
+                  break;
             }
         }, true);
     },
 
-    _realError: function(error) {
-        if(!error) {
-            $("#error").html("");
-            return;
-        }
-        switch (error.code) {
-            case error.MEDIA_ERR_ABORTED:
-                $("#error").html("Playback aborted.");
-              break;
-            case error.MEDIA_ERR_NETWORK:
-              $("#error").html("Network error");
-              break;
-            case error.MEDIA_ERR_DECODE:
-              $("#error").html("Decoding error");
-              break;
-            case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-              $("#error").html("Format not supported");
-              break;
-        }
+    _setMsg: function(msg) {
+        $("#status").html(msg);
     },
 
     play: function(url) {
-        this._realError(null);
-        this._aud.src = url;
-        this._aud.pause();
-        this._aud.load();
-        this._aud.play();
+        this._setMsg("");
+
+        var aud = this._aud;
+        aud.pause();
+
+        // work around shoutcast browser detection
+        var sources = [url];
+        if(endsWith(url, "/")) {
+            sources.push(url + ";");
+        } else if(!endsWith(url, ";")) {
+            sources.push(url + "/;");
+        }
+
+        while (aud.firstChild) {
+            aud.removeChild(aud.firstChild);
+        }
+
+        for (var i in sources) {
+            var elm = document.createElement('source');
+            elm.src = sources[i];
+            elm.type = "audio/mp3";
+            aud.appendChild(elm);
+        }
+
+        aud.load();
+        aud.play();
     },
 };
 
@@ -265,6 +277,7 @@ var Search = {
   _index: null,
   _active_query: null,
   _queued_query: null,
+  _output: null,
 
   _result_urls: null,
 
@@ -313,7 +326,7 @@ var Search = {
     if (query == Search._active_query)
         return;
     Search._active_query = query;
-    this.output = $('#search-results');
+    this._output = $('#search-results');
 
     if (this.hasIndex())
       this.query(query);
@@ -322,7 +335,7 @@ var Search = {
   },
 
   query : function(query) {
-    this.output.empty();
+    this._output.empty();
 
     var parts = query.toLowerCase().split(/\s+/);
     // filter out empty ones
@@ -381,28 +394,27 @@ var Search = {
 
     var parent = this;
     var show_first = 20;
+    var results_len = results.length;
 
-    function displayNextItem(query, entry_index) {
-      if (query !== parent._active_query || !results.length)
-        return;
+    function displayNextItem(query) {
+        if (query !== parent._active_query || !results.length)
+            return;
 
-      var item = results.pop();
-      var listItem = $(item);
-      Search.output.append(item);
+        var item = $(results.pop()).hide();
+        Search._output.append(item);
 
-      // show the first 30 immediately, then delay updates
-      if (entry_index < show_first) {
-        listItem.show();
-        displayNextItem(query, entry_index + 1);
-      } else {
-        listItem.slideDown(5, function() {
-          displayNextItem(query, entry_index + 1);
-        });
-      }
+        if(results.length > (results_len - 20)) {
+            item.show();
+            displayNextItem(query);
+        } else {
+            item.slideDown(5, function() {
+              displayNextItem(query);
+            });
+        }
     }
 
+    displayNextItem(query);
     $('#content').scrollTop(0);
-    displayNextItem(query, 1);
   },
 
 };
