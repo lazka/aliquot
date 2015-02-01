@@ -124,11 +124,11 @@ var Player = function() {
     var parent = this;
 
     this._audio.addEventListener('loadstart', function (e) {
-        AliquotUtil.setStatus("Loading started");
+        AliquotUtil.setStatus(parent.getActiveStation().getTitle() + "<br>" + "Loading started");
     });
 
     this._audio.addEventListener('stalled', function (e) {
-        AliquotUtil.setStatus("Loading stalled");
+        AliquotUtil.setStatus(parent.getActiveStation().getTitle() + "<br>" + "Loading stalled");
     });
 
     this._audio.addEventListener('playing', function (e) {
