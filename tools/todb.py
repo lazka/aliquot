@@ -1,4 +1,4 @@
-
+import json
 from quodlibet.util import sanitize_tags
 from quodlibet.util.string import decode, encode
 
@@ -54,43 +54,71 @@ with open("radiolist", "rb") as h:
 
 y = {}
 for i in x:
-    temp = {}
-    temp.update(i)
-    temp.pop("~uri")
-    temp.pop("~#listenerpeak", None)
-    #temp.pop("~#bitrate", None)
-    #print temp.keys()
-    key = tuple(sorted(temp.items()))
+    key = (i.get('organization', i.get("website", "")), i.get("website", ""))
+    if key == ("", ""):
+        continue
     y.setdefault(key, []).append(i)
 
-print len(y), len(x)
 
-#~ x = filter(lambda i: i.get("~#listenerpeak", 800) > 150, x)
-#~ 
-#~ keys = set()
-#~ for i in x:
-    #~ keys.update(i.keys())
-#~ keys = sorted(keys)
-#~ 
-#~ 
-#~ values = dict((v, []) for v in keys)
-#~ 
-#~ stations = []
-#~ for i in x:
-    #~ t = []
-    #~ for k in keys:
-        #~ value = i.get(k, "")
-        #~ tag_values = values[k]
-#~ 
-        #~ try:
-            #~ t.append(tag_values.index(value))
-        #~ except ValueError:
-            #~ t.append(len(tag_values))
-            #~ tag_values.append(value)
-    #~ stations.append(t)
-#~ 
-#~ values = [x[1] for x in sorted(values.items())]
-#~ keys = dict((k, keys.index(k)) for k in keys)
-#~ 
-#~ import json
-#~ print "Search.setIndex(" + json.dumps({"keys": keys, "values": values, "stations": stations}) + ");"
+final = {}
+urls = {}
+for k, v in y.iteritems():
+    bitrates = []
+    for station in v:
+        bitrate = station["~#bitrate"]
+        if "AAC" in station["audio-codec"]:
+            bitrate *= 1.5
+        bitrates.append(bitrate)
+    if max(bitrates) < 50:
+        continue
+
+    final[k] = v
+
+
+stations = []
+codecs = []
+genres = []
+for k, v in final.iteritems():
+    website = v[0].get("website", "")
+    orga = v[0].get("organization", website)
+    genre = " ".join(filter(None, set([i.get("genre", "") for i in v])))
+
+    if genre not in genres:
+        genre_idx = len(genres)
+        genres.append(genre)
+    else:
+        genre_idx = genres.index(genre)
+
+    urls = []
+    for x in v:
+        codec = x["audio-codec"]
+        if codec == "MPEG 1 Audio, Layer 2":
+            codec = "MP2"
+        if "AAC" in codec:
+            codec = "AAC"
+        if codec not in codecs:
+            codec_idx = len(codecs)
+            codecs.append(codec)
+        else:
+            codec_idx = codecs.index(codec)
+
+        channels = x.get("channel-mode", "stereo")
+        if channels == "stereo":
+            channels = 2
+        elif channels == "mono":
+            channels = 1
+        else:
+            assert 0, channels
+
+        urls.append((x["~uri"], x["~#bitrate"], codec_idx, channels))
+
+    def sort_key_urls(i):
+        return (i[1] * 1.5 if codecs[codec_idx] == "AAC" else i[1], codecs[codec_idx] == "AAC", i[0])
+
+    urls.sort(key=sort_key_urls, reverse=True)
+
+    stations.append((orga, website, genre_idx, tuple(urls)))
+
+stations.sort()
+
+print "app.setIndex(" + json.dumps({"genres": genres, "codecs": codecs, "stations": stations}) + ");"
