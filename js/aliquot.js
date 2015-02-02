@@ -261,6 +261,11 @@ Search.prototype.setIndex = function(index) {
     this._index = index;
     var query = this._queued_query;
 
+    var num_stations = this._index.stations.length;
+
+    $("#search-results").html(
+        "<div id='welcome'>" + num_stations + " Radio Stations<br>Search & Play</div>");
+
     if (query !== null) {
       this._queued_query = null;
       this._query(query);

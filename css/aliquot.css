@@ -64,6 +64,21 @@ body {
     box-shadow: inset 0px 0px 23px -7px rgba(0,0,0,0.33);
 }
 
+#welcome {
+    font-family: 'Lobster';
+    position: fixed;
+    left: 0px;
+    right: 0px;
+    top: 150px;
+    bottom: 0px;
+    height: 100%;
+    margin: auto auto;
+    text-align: center;
+    font-size: 30px;
+    line-height: 50px;
+}
+
+
 #random {
     font-size: 50px;
     line-height: 50px;
