@@ -71,7 +71,6 @@ body {
     right: 0px;
     top: 150px;
     bottom: 0px;
-    height: 100%;
     margin: auto auto;
     text-align: center;
     font-size: 30px;
@@ -80,9 +79,10 @@ body {
 
 
 #random {
-    font-size: 50px;
-    line-height: 50px;
+    font-size: 46px;
+    line-height: 46px;
     float: right;
+    margin: 2px;
     margin-right: 5px;
 }
 
@@ -147,13 +147,6 @@ a {
     background-color: #15BA84;
 }
 
-#stats {
-    position: fixed;
-    left: 17px;
-    bottom: 17px;
-    font-weight: bold;
-}
-
 #status {
     position: fixed;
     bottom: 5px;
@@ -167,4 +160,17 @@ a {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+}
+
+#playpause {
+    font-size: 46px;
+    line-height: 46px;
+    float: left;
+    margin: 2px;
+    margin-left: 5px;
+}
+
+#playpause .inactive {
+   pointer-events: none;
+   cursor: default;
 }

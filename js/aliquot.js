@@ -136,6 +136,14 @@ var Player = function() {
             parent.getActiveStation().getTitle() + "<br>" + parent.getActiveSource().getDesc());
     });
 
+    this._audio.addEventListener('play', function (e) {
+        $("#playpause-icon").attr("class", "fa fa-pause");
+    });
+
+    this._audio.addEventListener('pause', function (e) {
+        $("#playpause-icon").attr("class", "fa fa-play");
+    });
+
     this._audio.addEventListener('error', function (e) {
         var error = e.target.error;
 
@@ -158,6 +166,14 @@ var Player = function() {
         }
     }, true);
 };
+
+
+Player.prototype.playPause = function() {
+    if(this._audio.paused)
+        this._audio.play();
+    else
+        this._audio.pause();
+}
 
 
 Player.prototype.getActiveStation = function() {
@@ -352,7 +368,6 @@ Search.prototype._query = function(query) {
             res += '</a></div>';
             results.push(res);
          }
-         $("#stats").html("#" + results.length);
       }
 
     var parent = this;
@@ -415,6 +430,11 @@ Aliquot.prototype.start = function(index_url) {
         var station = search.getRandomResultStation();
         if(station != null)
             player.playStation(station);
+        return false;
+    });
+
+    $('#playpause').click(function () {
+        player.playPause();
         return false;
     });
 
