@@ -8,6 +8,12 @@ project [0].
 [0] https://code.google.com/p/quodlibet/
 
 
+Authors:
+--------
+
+Christoph Reiter <reiter.christoph@gmail.com>
+
+
 License
 -------
 
