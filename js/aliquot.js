@@ -385,14 +385,21 @@ Search.prototype._query = function(query) {
 
             this._result_ids.push(i);
             var res;
-            res = '<div class="result">';
-            res += '<a class="station" id="station-' + i + '" href="">';
-            res += '<i class="fa fa-music"></i>'
-            res += '<div class="station-title">' + title + '</div>';
-            res += '<div class="station-website">' + website + '</div>';
-            res += '<div class="station-details">' + format + ' | ' + genre + '</div>'
-            res += '</a></div>';
-            results.push(res);
+            if (results.length == 201) {
+                res = '<div class="result result-more">';
+                res += 'Limited to 200 results...</div>';
+                results.push(res);
+            }
+            else if (results.length <= 200) {
+                res = '<div class="result">';
+                res += '<a class="station" id="station-' + i + '" href="">';
+                res += '<i class="fa fa-music"></i>'
+                res += '<div class="station-title">' + title + '</div>';
+                res += '<div class="station-website">' + website + '</div>';
+                res += '<div class="station-details">' + format + ' | ' + genre + '</div>'
+                res += '</a></div>';
+                results.push(res);
+            }
          }
       }
 
@@ -404,7 +411,7 @@ Search.prototype._query = function(query) {
         if (query !== that._active_query || !results.length)
             return;
 
-        var item = $(results.pop()).hide();
+        var item = $(results.shift()).hide();
         output.append(item);
 
         if(results.length > (results_len - 20)) {

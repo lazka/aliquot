@@ -92,6 +92,13 @@ body {
     overflow: hidden;
 }
 
+.result-more {
+    font-size: 20px;
+    line-height: 60px;
+    text-align:center;
+    font-family: 'Lobster';
+}
+
 .result:hover {
     background-color: #DDD;
 }
