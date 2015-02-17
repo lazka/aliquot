@@ -121,19 +121,23 @@ Station.prototype.getFormatInfos = function() {
 var Player = function() {
     this._audio = new Audio();
     this._station = null;
-    var parent = this;
+    var that = this;
 
     this._audio.addEventListener('loadstart', function (e) {
-        AliquotUtil.setStatus(parent.getActiveStation().getTitle() + "<br>" + "Loading started");
+        if(that.isStopped())
+            return;
+        AliquotUtil.setStatus(that.getActiveStation().getTitle() + "<br>" + "Loading started");
     });
 
     this._audio.addEventListener('stalled', function (e) {
-        AliquotUtil.setStatus(parent.getActiveStation().getTitle() + "<br>" + "Loading stalled");
+        if(that.isStopped())
+            return;
+        AliquotUtil.setStatus(that.getActiveStation().getTitle() + "<br>" + "Loading stalled");
     });
 
     this._audio.addEventListener('playing', function (e) {
         AliquotUtil.setStatus(
-            parent.getActiveStation().getTitle() + "<br>" + parent.getActiveSource().getDesc());
+            that.getActiveStation().getTitle() + "<br>" + that.getActiveSource().getDesc());
     });
 
     this._audio.addEventListener('play', function (e) {
@@ -146,6 +150,11 @@ var Player = function() {
 
     this._audio.addEventListener('error', function (e) {
         var error = e.target.error;
+
+        if(that.isStopped()) {
+            $("#playpause-icon").attr("class", "fa fa-play");
+            return
+        }
 
         if(!error)
             return;
@@ -168,11 +177,29 @@ var Player = function() {
 };
 
 
+Player.prototype.stop = function() {
+    this._audio.pause();
+    this._audio.src = "";
+    this._audio.load();
+}
+
+
+Player.prototype.isStopped = function() {
+    return this._audio.hasAttribute("src");
+}
+
+
+Player.prototype.play = function() {
+    this._audio.removeAttribute("src");
+    this._audio.load();
+    this._audio.play();
+}
+
 Player.prototype.playPause = function() {
-    if(this._audio.paused)
-        this._audio.play();
+    if(this.isStopped())
+        this.play();
     else
-        this._audio.pause();
+        this.stop();
 }
 
 
@@ -241,8 +268,7 @@ Player.prototype.playStation = function(station) {
         audio.appendChild(elm);
     }
 
-    audio.load();
-    audio.play();
+    this.play();
 };
 
 
@@ -370,12 +396,12 @@ Search.prototype._query = function(query) {
          }
       }
 
-    var parent = this;
+    var that = this;
     var show_first = 20;
     var results_len = results.length;
 
     var displayNextItem = function(query) {
-        if (query !== parent._active_query || !results.length)
+        if (query !== that._active_query || !results.length)
             return;
 
         var item = $(results.pop()).hide();
