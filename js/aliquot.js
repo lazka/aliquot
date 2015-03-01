@@ -229,12 +229,12 @@ Player.prototype.getActiveSource = function() {
 }
 
 
-Player.prototype.playStation = function(station) {
+Player.prototype.setStation = function(station) {
     var audio = this._audio;
     this._station = station;
 
-    audio.pause();
-    AliquotUtil.setStatus("");
+    this.stop();
+    AliquotUtil.setStatus(station.getTitle());
 
     var fixup_shoutcast = function(urls) {
         // work around shoutcast browser detection
@@ -267,8 +267,6 @@ Player.prototype.playStation = function(station) {
         elm.src = urls[i];
         audio.appendChild(elm);
     }
-
-    this.play();
 };
 
 
@@ -303,15 +301,15 @@ Search.prototype.setIndex = function(index) {
     this._index = index;
     var query = this._queued_query;
 
-    var num_stations = this._index.stations.length;
-
-    $("#search-results").html(
-        "<div id='welcome'>" + num_stations + " Radio Stations<br>Search & Play</div>");
-
     if (query !== null) {
       this._queued_query = null;
       this._query(query);
     }
+};
+
+
+Search.prototype.getStationCount = function() {
+      return this._index.stations.length;
 };
 
 
@@ -455,14 +453,17 @@ Aliquot.prototype.start = function(index_url) {
     $('#search-field').keyup(function(){
         var val = $(this).val()
         delay(function(){
+            $.cookie('search_text', val, { expires: 100 });
             search.performSearch(val);
         }, 200);
     });
 
     $('#random').click(function () {
         var station = search.getRandomResultStation();
-        if(station != null)
-            player.playStation(station);
+        if(station != null) {
+            player.setStation(station);
+            player.play();
+        }
         return false;
     });
 
@@ -474,8 +475,10 @@ Aliquot.prototype.start = function(index_url) {
     $("#search-results").on("click", ".station", function() {
         var id = $(this).attr("id");
         var index = parseInt(id.split("-").slice(-1)[0]);
+        $.cookie('station_id', index.toString(), { expires: 100 });
         var station = search.getStation(index);
-        player.playStation(station);
+        player.setStation(station);
+        player.play();
         return false;
     });
 
@@ -483,6 +486,27 @@ Aliquot.prototype.start = function(index_url) {
 };
 
 
+Aliquot.prototype.onStarted = function() {
+    var num_stations = this._search.getStationCount();
+    $("#search-results").html(
+        "<div id='welcome'>" + num_stations + " Radio Stations<br>Search & Play</div>");
+
+    var station_id = $.cookie('station_id');
+    if (station_id !== undefined) {
+        var index = parseInt(station_id);
+        var station = this._search.getStation(index);
+        this._player.setStation(station);
+    }
+
+    var search_text = $.cookie('search_text');
+    if (search_text !== undefined) {
+        $('#search-field').val(search_text);
+        this._search.performSearch(search_text);
+    }
+}
+
+
 Aliquot.prototype.setIndex = function(index) {
     this._search.setIndex(index);
+    this.onStarted();
 };

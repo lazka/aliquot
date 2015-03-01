@@ -31,6 +31,11 @@ JQuery:
 
     https://jquery.org/license/
 
+jquery-cookie:
+    MIT
+
+    https://github.com/carhartl/jquery-cookie
+
 Lato (Font):
     SIL OFL 1.1
 
