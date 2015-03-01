@@ -39,7 +39,7 @@ var Source = function(uri, bitrate, codec, channels) {
 
 
 Source.prototype.getDesc = function() {
-    return this.codec + " | " + this.bitrate + " kpbs | " + this.channels + " chan";
+    return this.codec + " (" + this.bitrate + " kbps, " + this.channels + " ch)";
 };
 
 
@@ -86,15 +86,20 @@ Station.prototype.getFormatInfos = function() {
     var codecs = this._codecs;
     var urls = this._stations[this.id][3];
     var formats = {};
+    var channels = {};
 
     for(var i in urls) {
         var url = urls[i];
         var bitrate = url[1];
         var codec_idx = url[2];
+        var chans = url[3];
         var codec = codecs[codec_idx];
-        if(!(codec in formats))
+        if(!(codec in formats)) {
             formats[codec] = [];
+            channels[codec] = [];
+        }
         formats[codec].push(bitrate);
+        channels[codec].push(chans);
     }
 
     var results = [];
@@ -102,12 +107,20 @@ Station.prototype.getFormatInfos = function() {
         var bitrates = formats[key];
         AliquotUtil.numSort(bitrates);
         bitrates = AliquotUtil.uniq(bitrates);
+        var chans = channels[key];
+        AliquotUtil.numSort(chans);
+        chans = AliquotUtil.uniq(chans);
         var text = key + " ("
         if (bitrates.length == 1)
             text += bitrates[0];
         else
             text += bitrates[0] + '-' + bitrates.slice(-1)[0];
-        text += ")"
+        text += " kbps, "
+        if (chans.length == 1)
+            text += chans[0];
+        else
+            text += chans[0] + '-' + chans.slice(-1)[0];
+        text += " ch)"
         results.push(text)
     }
 
@@ -234,7 +247,8 @@ Player.prototype.setStation = function(station) {
     this._station = station;
 
     this.stop();
-    AliquotUtil.setStatus(station.getTitle());
+    AliquotUtil.setStatus(
+        station.getTitle() + "<br>" + station.getFormatInfos().join(" | "));
 
     var fixup_shoutcast = function(urls) {
         // work around shoutcast browser detection
