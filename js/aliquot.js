@@ -454,7 +454,12 @@ Aliquot.prototype.start = function(index_url) {
     var player = this._player;
     var search = this._search;
 
-    $('#search-field').focus();
+    var isMobile = window.matchMedia("only screen and (max-width: 760px)");
+    if (!isMobile.matches) {
+        // only mobile the onscreen keyboard is annoying on start, so don't
+        // focus the search entry
+        $('#search-field').focus();
+    }
 
     var delay = (function(){
       var timer = 0;
