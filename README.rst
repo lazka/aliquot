@@ -21,6 +21,11 @@ Everything not otherwise specified is licenses under the GPLv2+.
 
 Other included projects:
 
+detectmobilebrowser.js:
+    Public Domain
+
+    http://detectmobilebrowsers.com/about
+
 Font Awesome:
     SIL OFL 1.1 / MIT
 
