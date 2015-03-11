@@ -499,7 +499,7 @@ Aliquot.prototype.start = function(index_url) {
 
 
 Aliquot.prototype.onStarted = function() {
-    $("#loading").fadeOut("fast");
+    $("#loading").fadeOut();
 
     var num_stations = this._search.getStationCount();
     $("#search-results").html(
