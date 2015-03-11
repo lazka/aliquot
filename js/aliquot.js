@@ -499,6 +499,8 @@ Aliquot.prototype.start = function(index_url) {
 
 
 Aliquot.prototype.onStarted = function() {
+    $("#loading").fadeOut("fast");
+
     var num_stations = this._search.getStationCount();
     $("#search-results").html(
         "<div id='welcome'>" + num_stations + " Radio Stations<br>Search & Play</div>");
