@@ -56,8 +56,8 @@ var Station = function(index, id) {
 
 Station.prototype.getSources = function() {
     var urls = this._stations[this.id][3];
-    var sources = []
-    for(var i in urls) {
+    var sources = [];
+    for(var i=0; i < urls.length; i++) {
         var url = urls[i];
         var codec = this._codecs[url[2]];
         var source = new Source(url[0], url[1], codec, url[3]);
@@ -88,7 +88,7 @@ Station.prototype.getFormatInfos = function() {
     var formats = {};
     var channels = {};
 
-    for(var i in urls) {
+    for(var i=0; i < urls.length; i++) {
         var url = urls[i];
         var bitrate = url[1];
         var codec_idx = url[2];
@@ -103,7 +103,7 @@ Station.prototype.getFormatInfos = function() {
     }
 
     var results = [];
-    for (var key in formats) {
+    for(var key in formats) {
         var bitrates = formats[key];
         AliquotUtil.numSort(bitrates);
         bitrates = AliquotUtil.uniq(bitrates);
@@ -230,7 +230,7 @@ Player.prototype.getActiveSource = function() {
     currentSrc = currentSrc.replace(/;$/, '').replace(/\/$/, '');
     var sources = station.getSources();
     var a = document.createElement('a');
-    for(var i in sources) {
+    for(var i=0; i < sources.length; i++) {
         var source = sources[i];
         a.href = source.uri;
         // normalize uri, remove shoutcast hack
@@ -253,7 +253,7 @@ Player.prototype.setStation = function(station) {
     var fixup_shoutcast = function(urls) {
         // work around shoutcast browser detection
         var sources = [];
-        for(var i in urls) {
+        for(var i=0; i < urls.length; i++) {
             var url = urls[i];
             if(AliquotUtil.endsWith(url, "/"))
                 sources.push(url + ";");
@@ -270,13 +270,13 @@ Player.prototype.setStation = function(station) {
 
     var sources = station.getSources();
     var urls = [];
-    for(var i in sources) {
+    for(var i=0; i < sources.length; i++) {
         var source = sources[i];
         urls.push(source.uri);
     }
     urls = fixup_shoutcast(urls);
 
-    for (var i in urls) {
+    for(var i=0; i < urls.length; i++) {
         var elm = document.createElement('source');
         elm.src = urls[i];
         audio.appendChild(elm);
@@ -369,7 +369,7 @@ Search.prototype._query = function(query) {
     var results = [];
 
     var temp = new Station(this._index);
-    for(var i in stations) {
+    for(var i=0; i < stations.length; i++) {
         temp.id = i;
 
         var title = temp.getTitle();
@@ -381,7 +381,7 @@ Search.prototype._query = function(query) {
         var website_low = website.toLowerCase();
 
         var ok = true;
-        for(var j in parts) {
+        for(var j=0; j < parts.length; j++) {
             var part = parts[j];
             if (genre_low.indexOf(part) == -1 &&
                     title_low.indexOf(part) == -1 &&
